@@ -1,7 +1,7 @@
 // Example_Soft_Cup.cpp : 定义控制台应用程序的入口点。
 //
 
-#include "SoftRenderer\SoftPreset.h"
+#include "SoftRenderer\SoftPhongShading.h"
 #include "Core\Application.h"
 #include "ResourceParser\TextureLoader.h"
 #include "PlatformSpec\WinViewer.h"
@@ -39,9 +39,7 @@ namespace soft_cup {
 					v.attribs.normal = objv.normal;
 				}
 
-				for (size_t ii = 0; ii < mesh.tris.size(); ii += 3) {
-					cmd.prims.tris_.push_back({ mesh.tris[ii], mesh.tris[ii + 1], mesh.tris[ii + 2] });
-				}
+				cmd.prims.indexs_ = mesh.tris;
 
 				cmd.proj_trsf = Matrix44f::Perspective(kGSPI * 0.5f, w / h, 0.5f, 500.0f);//投影变换
 

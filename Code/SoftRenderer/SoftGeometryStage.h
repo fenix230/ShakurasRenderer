@@ -18,7 +18,7 @@ public:
 	}
 
 	void process(SoftDrawCall<UL, A, V>& call) {
-		profiler_->count("Geo-Triangle Count", (int)call.prims.tris_.size());
+		profiler_->count("Geo-Triangle Count", (int)call.prims.indexs_.size() / 3);
 
 		//vertex sharding
 		//geometry sharding£¨Œ¥ µœ÷

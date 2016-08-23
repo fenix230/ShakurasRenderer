@@ -30,9 +30,6 @@
     <ClInclude Include="..\..\..\Code\SoftRenderer\SoftMipmap.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Code\SoftRenderer\SoftPreset.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\Code\SoftRenderer\SoftPrimitiveList.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -49,6 +46,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\Code\SoftRenderer\SoftVertex.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Code\SoftRenderer\SoftPhongShading.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Code\SoftRenderer\SoftSSAOShading.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

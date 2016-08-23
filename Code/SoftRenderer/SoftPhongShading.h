@@ -83,7 +83,7 @@ inline SoftPhongVaryingList operator/(const SoftPhongVaryingList& v1, float d) {
 
 typedef SoftVertex<SoftPhongAttribList, SoftPhongVaryingList> SoftPhongVertex;
 
-typedef SoftFragment<SoftPhongVaryingList> SoftPhongFragment;
+typedef SoftFragment<SoftPhongVaryingList, Vector4f> SoftPhongFragment;
 
 typedef SoftDrawCall<SoftPhongUniformList, SoftPhongAttribList, SoftPhongVaryingList> SoftPhongDrawCall;
 
@@ -136,7 +136,7 @@ public:
 };
 
 
-typedef SoftRenderStage<SoftPhongUniformList, SoftPhongAttribList, SoftPhongVaryingList, SoftPhongVertexShader, SoftPhongFragmentShader> SoftPhongRenderStage;
+typedef SoftRenderStage<SoftPhongUniformList, SoftPhongAttribList, SoftPhongVaryingList, Vector4f, SoftPhongVertexShader, SoftPhongFragmentShader> SoftPhongRenderStage;
 
 
 SHAKURAS_END;

@@ -5,7 +5,7 @@
 SHAKURAS_BEGIN;
 
 
-template<class V>
+template<class V, class C>
 class SoftFragment {
 public:
 	SoftFragment() : x(0), y(0), z(1.0f), weight(0.0f) {}
@@ -15,7 +15,7 @@ public:
 	float z;
 	V varyings;
 	float weight;
-	Vector4f c;
+	C c;
 };
 
 

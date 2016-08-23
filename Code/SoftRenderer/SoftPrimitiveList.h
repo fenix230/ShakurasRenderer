@@ -11,12 +11,12 @@ class SoftPrimitiveList {
 public:
 	void clear() {
 		verts_.clear();
-		tris_.clear();
+		indexs_.clear();
 	}
 
 public:
 	std::vector<SoftVertex<A, V> > verts_;
-	std::vector<std::array<size_t, 3> > tris_;//[0,1,2][3,4,5]...
+	std::vector<size_t> indexs_;//Ò»¶¨ÊÇTriangles
 };
 
 

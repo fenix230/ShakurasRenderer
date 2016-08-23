@@ -3,7 +3,7 @@
 
 
 #include <vector>
-#include "SoftRenderer\SoftPreset.h"
+#include "SoftRenderer\SoftPhongShading.h"
 #include "Core\Application.h"
 #include "ResourceParser\TextureLoader.h"
 #include "PlatformSpec\WinViewer.h"
@@ -61,13 +61,17 @@ namespace soft_cube {
 			prims.verts_.push_back(p1);
 			prims.verts_.push_back(p2);
 			prims.verts_.push_back(p3);
-			prims.tris_.push_back({ index, index + 1, index + 2 });
+			prims.indexs_.push_back(index);
+			prims.indexs_.push_back(index + 1);
+			prims.indexs_.push_back(index + 2);
 
 			index = prims.verts_.size();
 			prims.verts_.push_back(p3);
 			prims.verts_.push_back(p4);
 			prims.verts_.push_back(p1);
-			prims.tris_.push_back({ index, index + 1, index + 2 });
+			prims.indexs_.push_back(index);
+			prims.indexs_.push_back(index + 1);
+			prims.indexs_.push_back(index + 2);
 		};
 
 		draw_plane(0, 3, 2, 1);

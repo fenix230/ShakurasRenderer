@@ -63,7 +63,7 @@ public:
 		tridict_.clear();
 
 		overts_.clear();
-		otris_.clear();
+		oindexs_.clear();
 	}
 
 	void process() {
@@ -78,7 +78,7 @@ public:
 		computeClipedTriangle();
 
 		iprims_->verts_.swap(overts_);
-		iprims_->tris_.swap(otris_);
+		iprims_->indexs_.swap(oindexs_);
 	}
 
 private:
@@ -155,10 +155,10 @@ private:
 		overts_ = iprims_->verts_;
 
 		//分配空间
-		for (size_t i = 0; i != iprims_->tris_.size(); i++) {
-			const size_t i1 = iprims_->tris_[i][0];
-			const size_t i2 = iprims_->tris_[i][1];
-			const size_t i3 = iprims_->tris_[i][2];
+		for (size_t i = 0; i != iprims_->indexs_.size(); i += 3) {
+			const size_t i1 = iprims_->indexs_[i];
+			const size_t i2 = iprims_->indexs_[i + 1];
+			const size_t i3 = iprims_->indexs_[i + 2];
 
 			const short o1 = oris_[i1];
 			const short o2 = oris_[i2];
@@ -195,9 +195,9 @@ private:
 	}
 
 	void allocTriangle(size_t i) {
-		const size_t i1 = iprims_->tris_[i][0];
-		const size_t i2 = iprims_->tris_[i][1];
-		const size_t i3 = iprims_->tris_[i][2];
+		const size_t i1 = iprims_->indexs_[i];
+		const size_t i2 = iprims_->indexs_[i + 1];
+		const size_t i3 = iprims_->indexs_[i + 2];
 
 		const SoftVertex<A, V>& v1 = iprims_->verts_[i1];
 		const SoftVertex<A, V>& v2 = iprims_->verts_[i2];
@@ -237,12 +237,13 @@ private:
 		//	S-3.1 插值得到四个点，生成五边形，拆分成三个三角形，输出
 
 		std::array<size_t, 3> tri_index = { i1, i2, i3 };
+		size_t inf = (std::numeric_limits<size_t>::max)();
 
 		if (max_count == 3) {
 			//S-1.1
 			if (counter[kOK] == 3) {
-				tridict_[i].push_back(otris_.size());
-				otris_.push_back({ 0, 0, 0 });
+				tridict_[i].push_back(oindexs_.size());
+				oindexs_.insert(oindexs_.end(), 3, inf);
 			}
 
 			//S-1.2
@@ -251,43 +252,51 @@ private:
 		else if (max_count == 2) {
 			//S-2.1
 			if (counter[kOK] == 1) {
-				tridict_[i].push_back(otris_.size());
-				otris_.push_back({ 0, 0, 0 });
+				tridict_[i].push_back(oindexs_.size());
+				oindexs_.insert(oindexs_.end(), 3, inf);
 			}
 			//S-2.2
 			else if (counter[kOK] == 2) {
-				tridict_[i].push_back(otris_.size());
-				otris_.push_back({ 0, 0, 0 });
+				tridict_[i].push_back(oindexs_.size());
+				oindexs_.insert(oindexs_.end(), 3, inf);
 
-				tridict_[i].push_back(otris_.size());
-				otris_.push_back({ 0, 0, 0 });
+				tridict_[i].push_back(oindexs_.size());
+				oindexs_.insert(oindexs_.end(), 3, inf);
 			}
 			//S-2.3
 			else if (counter[kOK] == 0) {
-				tridict_[i].push_back(otris_.size());
-				otris_.push_back({ 0, 0, 0 });
+				tridict_[i].push_back(oindexs_.size());
+				oindexs_.insert(oindexs_.end(), 3, inf);
 
-				tridict_[i].push_back(otris_.size());
-				otris_.push_back({ 0, 0, 0 });
+				tridict_[i].push_back(oindexs_.size());
+				oindexs_.insert(oindexs_.end(), 3, inf);
 			}
 		}
 		else if (max_count == 1) {
 			//S - 3.1
-			tridict_[i].push_back(otris_.size());
-			otris_.push_back({ 0, 0, 0 });
+			tridict_[i].push_back(oindexs_.size());
+			oindexs_.insert(oindexs_.end(), 3, inf);
 
-			tridict_[i].push_back(otris_.size());
-			otris_.push_back({ 0, 0, 0 });
+			tridict_[i].push_back(oindexs_.size());
+			oindexs_.insert(oindexs_.end(), 3, inf);
 
-			tridict_[i].push_back(otris_.size());
-			otris_.push_back({ 0, 0, 0 });
+			tridict_[i].push_back(oindexs_.size());
+			oindexs_.insert(oindexs_.end(), 3, inf);
 		}
 	}
 
-	void clipTriangle(size_t i) {
-		const size_t i1 = iprims_->tris_[i][0];
-		const size_t i2 = iprims_->tris_[i][1];
-		const size_t i3 = iprims_->tris_[i][2];
+	void copyOIndex3(size_t i1, size_t i2, size_t i3, size_t pos) {
+		oindexs_[pos] = i1;
+		oindexs_[pos + 1] = i2;
+		oindexs_[pos + 2] = i3;
+	}
+
+	void clipTriangle(size_t itir) {
+		size_t i = itir * 3;
+
+		const size_t i1 = iprims_->indexs_[i];
+		const size_t i2 = iprims_->indexs_[i + 1];
+		const size_t i3 = iprims_->indexs_[i + 2];
 
 		const SoftVertex<A, V>& v1 = iprims_->verts_[i1];
 		const SoftVertex<A, V>& v2 = iprims_->verts_[i2];
@@ -333,7 +342,7 @@ private:
 		if (max_count == 3) {
 			//S-1.1
 			if (counter[kOK] == 3) {
-				otris_[dict[0]] = { i1, i2, i3 };
+				copyOIndex3(i1, i2, i3, dict[0]);
 			}
 
 			//S-1.2
@@ -354,7 +363,7 @@ private:
 				size_t lerp_v3 = lerpIndex(tri_index[0], tri_index[2], oo);
 
 				//输出
-				otris_[dict[0]] = { tri_index[0], lerp_v2, lerp_v3 };
+				copyOIndex3(tri_index[0], lerp_v2, lerp_v3, dict[0]);
 			}
 			//S-2.2
 			else if (counter[kOK] == 2) {
@@ -373,8 +382,8 @@ private:
 				//三角形为 [lerp_v2, v2, v3] [lerp_v2, v3, lerp_v3]
 
 				//输出
-				otris_[dict[0]] = { lerp_v2, tri_index[1], tri_index[2] };
-				otris_[dict[1]] = { lerp_v2, tri_index[2], lerp_v3 };
+				copyOIndex3(lerp_v2, tri_index[1], tri_index[2], dict[0]);
+				copyOIndex3(lerp_v2, tri_index[2], lerp_v3, dict[1]);
 			}
 			//S-2.3
 			else if (counter[kOK] == 0) {
@@ -396,8 +405,8 @@ private:
 				//三角形为 [lerp_v2_one, lerp_v2_two, lerp_v3_two] [lerp_v2_one, lerp_v3_two, lerp_v3_one]
 
 				//输出
-				otris_[dict[0]] = { lerp_v2_one, lerp_v2_two, lerp_v3_two };
-				otris_[dict[1]] = { lerp_v2_one, lerp_v3_two, lerp_v3_one };
+				copyOIndex3(lerp_v2_one, lerp_v2_two, lerp_v3_two, dict[0]);
+				copyOIndex3(lerp_v2_one, lerp_v3_two, lerp_v3_one, dict[1]);
 			}
 		}
 		else if (max_count == 1) {
@@ -424,24 +433,24 @@ private:
 			//三角形为 [v1, lerp_v01, lerp_v12_1] [v1, lerp_v12_1, lerp_v12_2] [v1, lerp_v12_2, lerp_v02]
 
 			//输出
-			otris_[dict[0]] = { tri_index[0], lerp_v01, lerp_v12_1 };
-			otris_[dict[1]] = { tri_index[0], lerp_v12_1, lerp_v12_2 };
-			otris_[dict[2]] = { tri_index[0], lerp_v12_2, lerp_v02 };
+			copyOIndex3(tri_index[0], lerp_v01, lerp_v12_1, dict[0]);
+			copyOIndex3(tri_index[0], lerp_v12_1, lerp_v12_2, dict[1]);
+			copyOIndex3(tri_index[0], lerp_v12_2, lerp_v02, dict[2]);
 		}
 	}
 
 	void computeClipedTriangle() {
-		tridict_.resize(iprims_->tris_.size());
+		tridict_.resize(iprims_->indexs_.size());
 
-		for (size_t i = 0; i != iprims_->tris_.size(); i++) {
+		for (size_t i = 0; i + 2 < iprims_->indexs_.size(); i += 3) {
 			allocTriangle(i);
 		}
 
-		auto clip_tri = [&](size_t i) {
-			clipTriangle(i);
+		auto clip_tri = [&](size_t itir) {
+			clipTriangle(itir);
 		};
 
-		Concurrency::parallel_for(size_t(0), iprims_->tris_.size(), clip_tri);
+		Concurrency::parallel_for(size_t(0), iprims_->indexs_.size() / 3, clip_tri);
 	}
 
 private:
@@ -459,7 +468,7 @@ private:
 	std::vector<std::vector<size_t> > tridict_;//[tri_index, [cliped_tri_index]]
 
 	std::vector<SoftVertex<A, V> > overts_;
-	std::vector<std::array<size_t, 3> > otris_;
+	std::vector<size_t> oindexs_;
 };
 
 

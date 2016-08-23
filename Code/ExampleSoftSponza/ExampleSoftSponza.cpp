@@ -1,7 +1,7 @@
 // Example_Soft_Sponza.cpp : 定义控制台应用程序的入口点。
 //
 
-#include "SoftRenderer\SoftPreset.h"
+#include "SoftRenderer\SoftPhongShading.h"
 #include "Core\Application.h"
 #include "ResourceParser\TextureLoader.h"
 #include "PlatformSpec\WinViewer.h"
@@ -94,9 +94,7 @@ namespace soft_sponza {
 					v.attribs.normal = objv.normal;
 				}
 
-				for (size_t ii = 0; ii < mesh.tris.size(); ii += 3) {
-					cmd.prims.tris_.push_back({ mesh.tris[ii], mesh.tris[ii + 1], mesh.tris[ii + 2] });
-				}
+				cmd.prims.indexs_ = mesh.tris;
 
 				projtrsf_ = Matrix44f::Perspective(kGSPI * 0.5f, w / h, 5.0f, 1000.0f);//投影变换
 				cmd.proj_trsf.reset();
@@ -155,7 +153,7 @@ namespace soft_sponza {
 		int step_, move_;
 	};
 
-	typedef shakuras::SoftRenderStage<UniformList, SoftPhongAttribList, SoftPhongVaryingList, VertexShader, FragmentShader> RenderStage;
+	typedef shakuras::SoftRenderStage<UniformList, SoftPhongAttribList, SoftPhongVaryingList, Vector4f, VertexShader, FragmentShader> RenderStage;
 
 	typedef shakuras::Application<DrawCall, AppStage, RenderStage> Application;
 }
