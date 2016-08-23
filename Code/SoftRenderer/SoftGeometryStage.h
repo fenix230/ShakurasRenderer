@@ -25,7 +25,6 @@ public:
 		//projection transform
 		auto vert_geom_sharding_and_proj = [&](SoftVertex<A, V>& vert) {
 			VS().process(call.uniforms, vert);
-			vert.pos = call.proj_trsf.transform(vert.pos);
 		};
 
 		profiler_->count("Vert-Sharder Excuted", (int)call.prims.verts_.size());
@@ -40,7 +39,6 @@ public:
 			screenMapping(vert.pos);
 		};
 		Concurrency::parallel_for_each(call.prims.verts_.begin(), call.prims.verts_.end(), screen_mapping);
-
 	}
 
 	void refuseBack(bool rb) {

@@ -96,8 +96,7 @@ namespace soft_sponza {
 
 				cmd.prims.indexs_ = mesh.tris;
 
-				projtrsf_ = Matrix44f::Perspective(kGSPI * 0.5f, w / h, 5.0f, 1000.0f);//投影变换
-				cmd.proj_trsf.reset();
+				proj_ = Matrix44f::Perspective(kGSPI * 0.5f, w / h, 5.0f, 1000.0f);//投影变换
 
 				SoftSurfacePtr surface = std::make_shared<SoftSurface>();
 				int texw = 0, texh = 0;
@@ -138,7 +137,7 @@ namespace soft_sponza {
 			for (size_t i = 0; i != outputs_.size(); i++) {
 				DrawCall& cmd = outputs_[i];
 
-				cmd.uniforms.mvp_trsf = modeltrsf * viewtrsf * projtrsf_;//模型*视图*投影
+				cmd.uniforms.mvp_trsf = modeltrsf * viewtrsf * proj_;//模型*视图*投影
 				cmd.uniforms.eye_pos = eye_pos;//相机位置
 				cmd.uniforms.light_pos = light_pos;//光源位置
 			}
@@ -148,7 +147,7 @@ namespace soft_sponza {
 
 	private:
 		WinMemViewerPtr viewer_;
-		Matrix44f projtrsf_;
+		Matrix44f proj_;
 		std::vector<DrawCall> outputs_;
 		int step_, move_;
 	};

@@ -41,7 +41,7 @@ namespace soft_cup {
 
 				cmd.prims.indexs_ = mesh.tris;
 
-				cmd.proj_trsf = Matrix44f::Perspective(kGSPI * 0.5f, w / h, 0.5f, 500.0f);//投影变换
+				proj_ = Matrix44f::Perspective(kGSPI * 0.5f, w / h, 0.5f, 500.0f);//投影变换
 
 				int texw = 0, texh = 0;
 				void* bits = LoadTexture(mesh.mtl.tex_full_path, false, texw, texh);
@@ -81,7 +81,7 @@ namespace soft_cup {
 			for (size_t i = 0; i != outputs_.size(); i++) {
 				SoftPhongDrawCall& cmd = outputs_[i];
 				cmd.uniforms.model_trsf = modeltrsf;//模型变换
-				cmd.uniforms.mv_trsf = modeltrsf * viewtrsf;//模型*视图变换
+				cmd.uniforms.mvp_trsf = modeltrsf * viewtrsf * proj_;//模型*视图变换*投影变换
 				cmd.uniforms.eye_pos = eye_pos;//相机位置
 				cmd.uniforms.light_pos = light_pos;//光源位置
 			}
@@ -91,6 +91,7 @@ namespace soft_cup {
 
 	private:
 		WinMemViewerPtr viewer_;
+		Matrix44f proj_;
 		std::vector<SoftPhongDrawCall> outputs_;
 		float alpha_;
 		float pos_;
