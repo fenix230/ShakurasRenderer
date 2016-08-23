@@ -200,7 +200,7 @@
     <ClInclude Include="..\..\..\Code\SoftRenderer\SoftRasterizerStage.h" />
     <ClInclude Include="..\..\..\Code\SoftRenderer\SoftRenderStage.h" />
     <ClInclude Include="..\..\..\Code\SoftRenderer\SoftSampler.h" />
-    <ClInclude Include="..\..\..\Code\SoftRenderer\SoftSSAOShading.h" />
+    <ClInclude Include="..\..\..\Code\SoftRenderer\SoftDeferedShading.h" />
     <ClInclude Include="..\..\..\Code\SoftRenderer\SoftSurface.h" />
     <ClInclude Include="..\..\..\Code\SoftRenderer\SoftVertex.h" />
   </ItemGroup>

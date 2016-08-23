@@ -298,7 +298,7 @@ public:
 	}
 
 	void clean() {
-		uint32_t cc = IBgr(Vector3f(0.2f, 0.2f, 0.6f));
+		uint32_t cc = Bgri(Vector3f(0.2f, 0.2f, 0.6f));
 		for (int y = 0; y < height_; y++) {
 			uint32_t *dst = framebuffer_[y];
 			for (int x = width_; x > 0; dst++, x--) dst[0] = cc;
@@ -366,7 +366,7 @@ private:
 			const SoftFragment<V, C>& frag = tile[i];
 			if (frag.weight != 0.0f && zbuffer_[frag.y][frag.x] <= frag.z) {
 				zbuffer_[frag.y][frag.x] = frag.z;
-				framebuffer_[frag.y][frag.x] = IRgba(frag.c);
+				framebuffer_[frag.y][frag.x] = Rgbai(frag.c);
 			}
 		}
 	}

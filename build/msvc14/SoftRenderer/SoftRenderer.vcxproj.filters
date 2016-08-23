@@ -51,7 +51,7 @@
     <ClInclude Include="..\..\..\Code\SoftRenderer\SoftPhongShading.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Code\SoftRenderer\SoftSSAOShading.h">
+    <ClInclude Include="..\..\..\Code\SoftRenderer\SoftDeferedShading.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

@@ -20,7 +20,7 @@ struct SoftPhongUniformList {
 	Vector3f specular;
 	Matrix44f model_trsf;
 	Matrix44f mvp_trsf;
-	Vector3f light_pos;
+	Vector3f light_dir;
 	Vector3f eye_pos;
 };
 
@@ -97,7 +97,7 @@ public:
 
 		v.varyings.normal = u.model_trsf.transform(v.attribs.normal.xyzw(0.0f)).xyz();
 
-		v.varyings.light_dir = u.light_pos - v.pos.xyz();
+		v.varyings.light_dir = u.light_dir;
 
 		v.varyings.eye_dir = u.eye_pos - v.pos.xyz();
 

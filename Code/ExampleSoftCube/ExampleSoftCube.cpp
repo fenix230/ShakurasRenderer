@@ -126,7 +126,7 @@ namespace soft_cube {
 
 			Vector3f eye(0, -3 - pos_, 2.0f), at(0, 0, 0), up(0, 0, 1);
 			Vector3f eye_pos = eye;
-			Vector3f light_pos(-100.0f, -100.0f, 100.0f);
+			Vector3f light_dir(-1.0f, -1.0f, 1.0f);
 
 			Matrix44f modeltrsf = Matrix44f::Rotate(0.0f, 0.0f, 1.0f, alpha_);
 			Matrix44f viewtrsf = Matrix44f::LookAt(eye, at, up);
@@ -135,7 +135,7 @@ namespace soft_cube {
 			output_.uniforms.model_trsf = modeltrsf;//模型变换
 			output_.uniforms.mvp_trsf = modeltrsf * viewtrsf * proj_;//模型*视图变换*投影变换
 			output_.uniforms.eye_pos = eye_pos;//相机位置
-			output_.uniforms.light_pos = light_pos;//光源位置
+			output_.uniforms.light_dir = light_dir;//光源位置
 
 			cmds.push_back(output_);
 		}

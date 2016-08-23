@@ -51,8 +51,8 @@ public:
 
 	inline int width() const { return width_; }
 	inline int height() const { return height_; }
-	inline Vector3f get(int x, int y) const { return VRgb(data_[y][x]); }
-	inline void set(int x, int y, const Vector3f& c) { data_[y][x] = IRgb(c); }
+	inline Vector3f get(int x, int y) const { return Rgbv(data_[y][x]); }
+	inline void set(int x, int y, const Vector3f& c) { data_[y][x] = Rgbi(c); }
 
 private:
 	std::vector<std::vector<uint32_t> > data_;
