@@ -303,14 +303,10 @@ public:
 		}
 	}
 
-	void setCleanColor(const color_scalar_t& c) {
-		clean_color_ = c;
-	}
-
 	void clean() {
 		for (int y = 0; y < height_; y++) {
 			color_data_t *dst = framebuffer_[y];
-			for (int x = width_; x > 0; dst++, x--) dst[0] = CF::data(clean_color_);
+			for (int x = width_; x > 0; dst++, x--) dst[0] = CF::data(CF::clean());
 		}
 
 		for (int y = 0; y < height_; y++) {
@@ -381,7 +377,6 @@ private:
 	}
 
 private:
-	color_scalar_t clean_color_;
 	std::vector<color_data_t*> framebuffer_;
 	std::vector<std::vector<float> > depthbuffer_;
 	int width_, height_;

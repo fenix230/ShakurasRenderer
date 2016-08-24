@@ -42,7 +42,7 @@ public:
 		height_ = hh;
 
 		data_.clear();
-		data_.resize(height_, std::vector<data_t>(width_, 0));
+		data_.resize(width_ * height_, 0);
 	}
 
 	template<typename C>
@@ -51,8 +51,7 @@ public:
 
 		for (int j = 0; j < height_; ++j) {
 			for (int i = 0; i < width_; ++i) {
-				uint32_t* c = &data_[j][i];
-				*c = conv(data[j*width_ + i]);
+				data_[j * width_ + i] = conv(data[j * width_ + i]);
 			}
 		}
 	}
@@ -60,13 +59,15 @@ public:
 	inline int width() const { return width_; }
 	inline int height() const { return height_; }
 
-	inline data_t getd(int x, int y) const { return data_[y][x]; }
-	inline void setd(int x, int y, const data_t& c) { data_[y][x] = c; }
-	inline scalar_t gets(int x, int y) const { return CF::scalar(data_[y][x]); }
-	inline void sets(int x, int y, const scalar_t& c) { data_[y][x] = CF::data(c); }
+	inline data_t getd(int x, int y) const { return data_[y * width_ + x]; }
+	inline void setd(int x, int y, const data_t& c) { data_[y * width_ + x] = c; }
+	inline scalar_t gets(int x, int y) const { return CF::scalar(data_[y * width_ + x]); }
+	inline void sets(int x, int y, const scalar_t& c) { data_[y * width_ + x] = CF::data(c); }
+
+	inline void* buffer() { return (void*)data_.data(); }
 
 private:
-	std::vector<std::vector<data_t> > data_;
+	std::vector<data_t> data_;
 	int width_, height_;
 };
 

@@ -18,6 +18,7 @@ public:
 		v.z = pu[2] / 255.0f;
 		return v;
 	}
+
 	static inline uint32_t data(const Vector3f& v) {
 		uint32_t u = 0;
 		unsigned char* pu = (unsigned char*)&u;
@@ -26,6 +27,10 @@ public:
 		pu[2] = (int)(v.z * 255);
 		pu[3] = 255;
 		return u;
+	}
+
+	static inline Vector3f clean() {
+		return Vector3f(0.2f, 0.2f, 0.6f);
 	}
 };
 
