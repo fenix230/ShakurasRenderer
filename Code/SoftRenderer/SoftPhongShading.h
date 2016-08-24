@@ -14,7 +14,7 @@ SHAKURAS_BEGIN;
 
 //典型 Fixed-Function Pipeline 的 Phong 着色
 struct SoftPhongUniformList {
-	SoftMipmapPtr texture;
+	SoftMipmapU32F3Ptr texture;
 	Vector3f ambient;
 	Vector3f diffuse;
 	Vector3f specular;
@@ -83,7 +83,7 @@ inline SoftPhongVaryingList operator/(const SoftPhongVaryingList& v1, float d) {
 
 typedef SoftVertex<SoftPhongAttribList, SoftPhongVaryingList> SoftPhongVertex;
 
-typedef SoftFragment<SoftPhongVaryingList, Vector4f> SoftPhongFragment;
+typedef SoftFragment<SoftPhongVaryingList, Vector3f> SoftPhongFragment;
 
 typedef SoftDrawCall<SoftPhongUniformList, SoftPhongAttribList, SoftPhongVaryingList> SoftPhongDrawCall;
 
@@ -131,12 +131,12 @@ public:
 		Clamp(c.y, 0.0f, 1.0f);
 		Clamp(c.z, 0.0f, 1.0f);
 
-		f.c.set(c.x, c.y, c.z, 1.0f);
+		f.c.set(c.x, c.y, c.z);
 	}
 };
 
 
-typedef SoftRenderStage<SoftPhongUniformList, SoftPhongAttribList, SoftPhongVaryingList, Vector4f, SoftPhongVertexShader, SoftPhongFragmentShader> SoftPhongRenderStage;
+typedef SoftRenderStage<SoftPhongUniformList, SoftPhongAttribList, SoftPhongVaryingList, ColorFormatU32F3, SoftPhongVertexShader, SoftPhongFragmentShader> SoftPhongRenderStage;
 
 
 SHAKURAS_END;

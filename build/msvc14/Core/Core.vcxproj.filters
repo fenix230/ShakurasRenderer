@@ -18,9 +18,6 @@
     <ClInclude Include="..\..\..\Code\Core\Application.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Code\Core\Color.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\Code\Core\MathAndGeometry.h">
       <Filter>头文件</Filter>
     </ClInclude>

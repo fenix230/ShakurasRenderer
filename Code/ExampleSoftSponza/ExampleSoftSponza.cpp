@@ -14,7 +14,7 @@ using namespace shakuras;
 namespace soft_sponza {
 
 	struct UniformList {
-		SoftMipmapPtr texture;
+		SoftMipmapU32F3Ptr texture;
 		Vector3f ambient;
 		Vector3f diffuse;
 		Vector3f specular;
@@ -62,7 +62,7 @@ namespace soft_sponza {
 			Clamp(c.y, 0.0f, 1.0f);
 			Clamp(c.z, 0.0f, 1.0f);
 
-			f.c.set(c.x, c.y, c.z, 1.0f);
+			f.c.set(c.x, c.y, c.z);
 		}
 	};
 
@@ -98,10 +98,10 @@ namespace soft_sponza {
 
 				proj_ = Matrix44f::Perspective(kGSPI * 0.5f, w / h, 5.0f, 1000.0f);//ͶӰ�任
 
-				SoftSurfacePtr surface = std::make_shared<SoftSurface>();
+				SoftSurfaceU32F3Ptr surface = std::make_shared<SoftSurfaceU32F3>();
 				int texw = 0, texh = 0;
 				void* bits = LoadTexture(mesh.mtl.tex_full_path, false, texw, texh);
-				surface->reset(texw, texh, (uint32_t*)bits);
+				surface->reset(texw, texh, (uint32_t*)bits, Swap02);
 				ResFree(bits);
 				cmd.uniforms.texture = CreateSoftMipmap(surface);
 
@@ -152,7 +152,7 @@ namespace soft_sponza {
 		int step_, move_;
 	};
 
-	typedef shakuras::SoftRenderStage<UniformList, SoftPhongAttribList, SoftPhongVaryingList, Vector4f, VertexShader, FragmentShader> RenderStage;
+	typedef shakuras::SoftRenderStage<UniformList, SoftPhongAttribList, SoftPhongVaryingList, ColorFormatU32F3, VertexShader, FragmentShader> RenderStage;
 
 	typedef shakuras::Application<DrawCall, AppStage, RenderStage> Application;
 }

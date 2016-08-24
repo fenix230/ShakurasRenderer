@@ -1,6 +1,5 @@
 #pragma once
-#include "Core/MathAndGeometry.h"
-#include "Core/Color.h"
+#include "SoftColorFormat.h"
 #include <vector>
 #include <math.h>
 #include <assert.h>
@@ -25,46 +24,70 @@ inline void RepeatAddr(float& u, float& v) {
 }
 
 
+template<class CF>
 class SoftSurface {
 public:
-	SoftSurface() {}
+	typedef CF format_t;
+	typedef typename CF::data_t data_t;
+	typedef typename CF::scalar_t scalar_t;
 
 public:
-	void reset(int ww, int hh, const uint32_t* data) {
+	SoftSurface() {
+		width_ = height_ = 0;
+	}
+
+public:
+	void reset(int ww, int hh) {
 		width_ = ww;
 		height_ = hh;
 
 		data_.clear();
-		data_.resize(height_, std::vector<uint32_t>(width_, 0));
+		data_.resize(height_, std::vector<data_t>(width_, 0));
+	}
 
-		if (data) {
-			for (int j = 0; j < height_; ++j) {
-				for (int i = 0; i < width_; ++i) {
-					uint32_t* c = &data_[j][i];
-					*c = data[j*width_ + i];
-					uint8_t* rgba = (uint8_t*)c;
-					std::swap(rgba[0], rgba[2]);
-				}
+	template<typename C>
+	void reset(int ww, int hh, const data_t* data, C conv) {
+		reset(ww, hh);
+
+		for (int j = 0; j < height_; ++j) {
+			for (int i = 0; i < width_; ++i) {
+				uint32_t* c = &data_[j][i];
+				*c = conv(data[j*width_ + i]);
 			}
 		}
 	}
 
 	inline int width() const { return width_; }
 	inline int height() const { return height_; }
-	inline Vector3f get(int x, int y) const { return Rgbv(data_[y][x]); }
-	inline void set(int x, int y, const Vector3f& c) { data_[y][x] = Rgbi(c); }
+
+	inline data_t getd(int x, int y) const { return data_[y][x]; }
+	inline void setd(int x, int y, const data_t& c) { data_[y][x] = c; }
+	inline scalar_t gets(int x, int y) const { return CF::scalar(data_[y][x]); }
+	inline void sets(int x, int y, const scalar_t& c) { data_[y][x] = CF::data(c); }
 
 private:
-	std::vector<std::vector<uint32_t> > data_;
+	std::vector<std::vector<data_t> > data_;
 	int width_, height_;
 };
 
 
-SHAKURAS_SHARED_PTR(SoftSurface);
+typedef SoftSurface<ColorFormatU32F3> SoftSurfaceU32F3;
+SHAKURAS_SHARED_PTR(SoftSurfaceU32F3);
 
 
-template<class S, typename AF>
-Vector3f NearestSample(float u, float v, const S& surface, AF addressing) {
+//for SoftSurface reset
+inline uint32_t Assign(uint32_t d) {
+	return d;
+}
+inline uint32_t Swap02(uint32_t d) {
+	uint8_t* p8 = (uint8_t*)(&d);
+	std::swap(p8[0], p8[2]);
+	return d;
+}
+
+
+template<class CF, typename AF>
+typename CF::scalar_t NearestSample(float u, float v, const SoftSurface<CF>& surface, AF addressing) {
 	addressing(u, v);
 
 	u *= (surface.width() - 1);
@@ -77,8 +100,8 @@ Vector3f NearestSample(float u, float v, const S& surface, AF addressing) {
 }
 
 
-template<class S, typename AF>
-Vector3f BilinearSample(float u, float v, const S& surface, AF addressing) {
+template<class CF, typename AF>
+typename CF::scalar_t BilinearSample(float u, float v, const SoftSurface<CF>& surface, AF addressing) {
 	addressing(u, v);
 
 	u *= (surface.width() - 1);
@@ -90,19 +113,21 @@ Vector3f BilinearSample(float u, float v, const S& surface, AF addressing) {
 	int cx_mod = cx % surface.width();
 	int cy_mod = cy % surface.height();
 
-	Vector3f lbc = surface.get(fx, fy);//左下
-	Vector3f rbc = surface.get(cx_mod, fy);//右下
-	Vector3f ltc = surface.get(fx, cy_mod);//左上
-	Vector3f rtc = surface.get(cx_mod, cy_mod);//右上
+	typedef typename CF::scalar_t scalar_t;
+
+	scalar_t lbc = surface.gets(fx, fy);//左下
+	scalar_t rbc = surface.gets(cx_mod, fy);//右下
+	scalar_t ltc = surface.gets(fx, cy_mod);//左上
+	scalar_t rtc = surface.gets(cx_mod, cy_mod);//右上
 
 	//u方向插值
 	float it = (cx != fx ? (u - fx) / (cx - fx) : 0.0f);
-	Vector3f ibc = lbc + (rbc - lbc) * it;
-	Vector3f itc = ltc + (rtc - ltc) * it;
+	scalar_t ibc = lbc + (rbc - lbc) * it;
+	scalar_t itc = ltc + (rtc - ltc) * it;
 
 	//v方向插值
 	it = (cy != fy ? (v - fy) / (cy - fy) : 0.0f);
-	Vector3f ic = ibc + (itc - ibc) * it;
+	scalar_t ic = ibc + (itc - ibc) * it;
 
 	return ic;
 }

@@ -8,7 +8,7 @@
 SHAKURAS_BEGIN;
 
 
-template<class UL, class A, class V, class C, class VS, class FS>
+template<class UL, class A, class V, class CF, class VS, class FS>
 class SoftRenderStage {
 public:
 	template<class VPTR>
@@ -28,7 +28,7 @@ public:
 
 public:
 	SoftGeometryStage<UL, A, V, VS> geostage_;
-	SoftRasterizerStage<UL, A, V, C, FS> rasstage_;
+	SoftRasterizerStage<UL, A, V, CF, FS> rasstage_;
 };
 
 

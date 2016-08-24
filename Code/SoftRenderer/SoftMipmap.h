@@ -1,4 +1,5 @@
 #pragma once
+#include "Core\MathAndGeometry.h"
 #include "SoftSurface.h"
 #include <vector>
 
@@ -6,12 +7,19 @@
 SHAKURAS_BEGIN;
 
 
+template<class CF>
 class SoftMipmap {
+public:
+	typedef CF format_t;
+	typedef typename CF::data_t data_t;
+	typedef typename CF::scalar_t scalar_t;
+	typedef SoftSurface<CF> surface_t;
+
 public:
 	SoftMipmap() {}
 
 public:
-	void reset(SoftSurfacePtr surface) {
+	void reset(std::shared_ptr<surface_t> surface) {
 		surfaces_.clear();
 
 		if (!surface) {
@@ -23,8 +31,8 @@ public:
 		int w = (surface->width() + 1) / 2;
 		int h = (surface->height() + 1) / 2;
 		while (w > 1 || h > 1) {
-			SoftSurfacePtr next_surface = std::make_shared<SoftSurface>();
-			next_surface->reset(w, h, nullptr);
+			std::shared_ptr<surface_t> next_surface = std::make_shared<surface_t>();
+			next_surface->reset(w, h);
 
 			for (int x = 0; x != w; x++) {
 				int xx = x * 2;
@@ -32,12 +40,12 @@ public:
 				for (int y = 0; y != h; y++) {
 					int yy = y * 2;
 
-					Vector3f c0 = surface->get(xx, yy);
-					Vector3f c1 = surface->get((xx + 1) % surface->width(), yy);
-					Vector3f c2 = surface->get(xx, (yy + 1) % surface->height());
-					Vector3f c3 = surface->get((xx + 1) % surface->width(), (yy + 1) % surface->height());
+					scalar_t c0 = surface->gets(xx, yy);
+					scalar_t c1 = surface->gets((xx + 1) % surface->width(), yy);
+					scalar_t c2 = surface->gets(xx, (yy + 1) % surface->height());
+					scalar_t c3 = surface->gets((xx + 1) % surface->width(), (yy + 1) % surface->height());
 
-					next_surface->set(x, y, (c0 + c1 + c2  + c3) * 0.25f);
+					next_surface->sets(x, y, (c0 + c1 + c2  + c3) * 0.25f);
 				}
 			}
 
@@ -50,7 +58,7 @@ public:
 	}
 
 	inline int levelCount() const { return (int)surfaces_.size(); }
-	inline const SoftSurface& level(int l) const  {
+	inline const surface_t& level(int l) const  {
 		if (l < 0) {
 			return *surfaces_.front();
 		}
@@ -61,27 +69,29 @@ public:
 	}
 
 private:
-	std::vector<SoftSurfacePtr> surfaces_;
+	std::vector<std::shared_ptr<surface_t> > surfaces_;
 };
 
 
-SHAKURAS_SHARED_PTR(SoftMipmap);
+typedef SoftMipmap<ColorFormatU32F3> SoftMipmapU32F3;
+SHAKURAS_SHARED_PTR(SoftMipmapU32F3);
 
 
-inline SoftMipmapPtr CreateSoftMipmap(SoftSurfacePtr surface) {
+template<class CF>
+std::shared_ptr<SoftMipmap<CF> > CreateSoftMipmap(std::shared_ptr<SoftSurface<CF> > surface) {
 	if (!surface) { 
 		return nullptr;
 	}
 
-	SoftMipmapPtr mipmap = std::make_shared<SoftMipmap>();
+	std::shared_ptr<SoftMipmap<CF> > mipmap = std::make_shared<SoftMipmap<CF> >();
 	mipmap->reset(surface);
 
 	return mipmap;
 }
 
 
-template<class M>
-float ComputeLevel(const Vector2f& ddx, const Vector2f& ddy, const M& mipmap) {
+template<class CF>
+float ComputeLevel(const Vector2f& ddx, const Vector2f& ddy, const SoftMipmap<CF>& mipmap) {
 	int w = mipmap.level(0).width();
 	int h = mipmap.level(0).height();
 
@@ -101,8 +111,8 @@ float ComputeLevel(const Vector2f& ddx, const Vector2f& ddy, const M& mipmap) {
 }
 
 
-template<class M, typename AF>
-Vector3f NearestSample(float u, float v, const Vector2f& ddx, const Vector2f& ddy, const M& mipmap, AF addressing) {
+template<class CF, typename AF>
+typename CF::scalar_t NearestSample(float u, float v, const Vector2f& ddx, const Vector2f& ddy, const SoftMipmap<CF>& mipmap, AF addressing) {
 	float lv = ComputeLevel(ddx, ddy, mipmap);
 	float lvf = floorf(lv);
 	lvf = Clamp(lvf, 0.0f, (float)mipmap.levelCount() - 1);
@@ -110,8 +120,8 @@ Vector3f NearestSample(float u, float v, const Vector2f& ddx, const Vector2f& dd
 }
 
 
-template<class M, typename AF>
-Vector3f BilinearSample(float u, float v, const Vector2f& ddx, const Vector2f& ddy, const M& mipmap, AF addressing) {
+template<class CF, typename AF>
+typename CF::scalar_t BilinearSample(float u, float v, const Vector2f& ddx, const Vector2f& ddy, const SoftMipmap<CF>& mipmap, AF addressing) {
 	float lv = ComputeLevel(ddx, ddy, mipmap);
 	float lvf = floorf(lv);
 
@@ -120,8 +130,8 @@ Vector3f BilinearSample(float u, float v, const Vector2f& ddx, const Vector2f& d
 }
 
 
-template<class M, typename AF>
-Vector3f TrilinearSample(float u, float v, const Vector2f& ddx, const Vector2f& ddy, const M& mipmap, AF addressing) {
+template<class CF, typename AF>
+typename CF::scalar_t TrilinearSample(float u, float v, const Vector2f& ddx, const Vector2f& ddy, const SoftMipmap<CF>& mipmap, AF addressing) {
 	float lv = ComputeLevel(ddx, ddy, mipmap);
 	int lvf = (int)lv;
 	int lvc = lvf + 1;
@@ -133,9 +143,10 @@ Vector3f TrilinearSample(float u, float v, const Vector2f& ddx, const Vector2f& 
 	if (lvf == lvc) {
 		return BilinearSample(u, v, mipmap.level(lvf), addressing);;
 	}
-
-	Vector3f cf = BilinearSample(u, v, mipmap.level(lvf), addressing);
-	Vector3f cc = BilinearSample(u, v, mipmap.level(lvc), addressing);
+	
+	typedef typename CF::scalar_t scalar_t;
+	scalar_t cf = BilinearSample(u, v, mipmap.level(lvf), addressing);
+	scalar_t cc = BilinearSample(u, v, mipmap.level(lvc), addressing);
 
 	float t = (lv - lvf) / (lvc - lvf);
 	return cf + (cc - cf) * t;

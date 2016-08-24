@@ -185,7 +185,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\Code\Core\Application.h" />
-    <ClInclude Include="..\..\..\Code\Core\Color.h" />
     <ClInclude Include="..\..\..\Code\Core\MathAndGeometry.h" />
     <ClInclude Include="..\..\..\Code\Core\Profiler.h" />
     <ClInclude Include="..\..\..\Code\Core\Utility.h" />

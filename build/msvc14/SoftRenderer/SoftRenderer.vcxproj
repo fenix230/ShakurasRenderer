@@ -191,6 +191,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\Code\SoftRenderer\SoftClipper.h" />
+    <ClInclude Include="..\..\..\Code\SoftRenderer\SoftColorFormat.h" />
     <ClInclude Include="..\..\..\Code\SoftRenderer\SoftDrawCall.h" />
     <ClInclude Include="..\..\..\Code\SoftRenderer\SoftFragment.h" />
     <ClInclude Include="..\..\..\Code\SoftRenderer\SoftGeometryStage.h" />

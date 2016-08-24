@@ -2,8 +2,7 @@
 #include "SoftGeometryStage.h"
 #include "SoftVertex.h"
 #include "SoftSampler.h"
-#include "Core/MathAndGeometry.h"
-#include "Core/Color.h"
+#include "SoftColorFormat.h"
 #include "Core/Profiler.h"
 #include <vector>
 #include <array>
@@ -118,10 +117,10 @@ int SpliteTrapezoid(const SoftVertex<A, V>& v0, const SoftVertex<A, V>& v1, cons
 
 
 //每个像素一个片元，每个片元一个采样点
-template<class V, class C>
+template<class FRAG>
 class TrapTraversal {
 public:
-	TrapTraversal(const Trapezoid& trap, int width, int height, std::vector<std::array<SoftFragment<V, C>, 4> >& output) {
+	TrapTraversal(const Trapezoid& trap, int width, int height, std::vector<std::array<FRAG, 4> >& output) {
 		trap_ = &trap;
 		width_ = width;
 		height_ = height;
@@ -185,7 +184,7 @@ private:
 
 			//2, 3
 			//0, 1
-			std::array<SoftFragment<V, C>, 4> tile;
+			std::array<FRAG, 4> tile;
 			fragAssign(xf0, yf0, rl0, tile[0]);
 			fragAssign(xf1, yf0, rl0, tile[1]);
 			fragAssign(xf0, yf1, rl1, tile[2]);
@@ -195,7 +194,7 @@ private:
 		}
 	}
 
-	void fragAssign(float xf, float yf, const RangeLine& rl, SoftFragment<V, C>& frag) {
+	void fragAssign(float xf, float yf, const RangeLine& rl, FRAG& frag) {
 		frag.x = (int)xf;
 		frag.y = (int)yf;
 		frag.z = Lerp(rl.left.z, rl.right.z, (xf - rl.left.x) / (rl.right.x - rl.left.x));
@@ -205,14 +204,14 @@ private:
 public:
 	const Trapezoid* trap_;
 	int width_, height_;
-	std::vector<std::array<SoftFragment<V, C>, 4> >* output_;
+	std::vector<std::array<FRAG, 4> >* output_;
 };
 
 
-template<class UL, class V, class C, class FS>
+template<class UL, class FRAG, class FS>
 class TileShader {
 public:
-	void process(const UL& u, std::array<SoftFragment<V, C>, 4>& tile) {
+	void process(const UL& u, std::array<FRAG, 4>& tile) {
 		sampler_.ddx_ = TexCoord(tile[1].varyings) - TexCoord(tile[0].varyings);
 		sampler_.ddy_ = TexCoord(tile[2].varyings) - TexCoord(tile[0].varyings);
 		for (int i = 0; i != 4; i++) {
@@ -228,12 +227,12 @@ public:
 };
 
 
-template<class A, class V, class C>
+template<class VERT, class FRAG>
 class LerpDerivative {
 public:
-	void setTriangle(const SoftVertex<A, V>& v0, const SoftVertex<A, V>& v1, const SoftVertex<A, V>& v2) {
-		SoftVertex<A, V> e01 = v1 - v0;
-		SoftVertex<A, V> e02 = v2 - v0;
+	void setTriangle(const VERT& v0, const VERT& v1, const VERT& v2) {
+		VERT e01 = v1 - v0;
+		VERT e02 = v2 - v0;
 
 		float area = e02.pos.x * e01.pos.y - e01.pos.x * e02.pos.y;
 		if (area == 0.0f) area = 0.000001f;
@@ -244,7 +243,7 @@ public:
 		ddy_ = (e01 * e02.pos.x - e02 * e01.pos.x) * inv_area;
 	}
 
-	void lerp(SoftFragment<V, C>& frag) const {
+	void lerp(FRAG& frag) const {
 		float fx = frag.x + 0.5f;
 		float fy = frag.y + 0.5f;
 		float rhw = frag.z;
@@ -254,12 +253,19 @@ public:
 	}
 
 private:
-	SoftVertex<A, V> v0_, ddy_, ddx_;
+	VERT v0_, ddy_, ddx_;
 };
 
 
-template<class UL, class A, class V, class C, class FS>
+template<class UL, class A, class V, class CF, class FS>
 class SoftRasterizerStage {
+public:
+	typedef typename CF::data_t color_data_t;
+	typedef typename CF::scalar_t color_scalar_t;
+	typedef SoftVertex<A, V> vertex_t;
+	typedef SoftFragment<V, color_scalar_t> fragment_t;
+
+
 public:
 	void initialize(int ww, int hh, void* fb, Profiler& profiler) {
 		width_ = ww;
@@ -267,15 +273,15 @@ public:
 		profiler_ = &profiler;
 
 		framebuffer_.resize(height_, nullptr);
-		zbuffer_.resize(height_);
+		depthbuffer_.resize(height_);
 
 		for (int y = 0; y != height_; y++) {
-			zbuffer_[y].resize(width_, 0.0f);
+			depthbuffer_[y].resize(width_, 0.0f);
 		}
 
-		char* framebuf = (char*)fb;
+		color_data_t* framebuf = (color_data_t*)fb;
 		for (int i = 0; i < height_; i++) {
-			framebuffer_[i] = (uint32_t*)(framebuf + width_ * 4 * i);
+			framebuffer_[i] = framebuf + width_ * i;
 		}
 	}
 
@@ -290,33 +296,36 @@ public:
 			//merging
 			const size_t* tri = &call.prims.indexs_[i];
 
-			const SoftVertex<A, V>& v1 = call.prims.verts_[tri[0]];
-			const SoftVertex<A, V>& v2 = call.prims.verts_[tri[1]];
-			const SoftVertex<A, V>& v3 = call.prims.verts_[tri[2]];
+			const vertex_t& v1 = call.prims.verts_[tri[0]];
+			const vertex_t& v2 = call.prims.verts_[tri[1]];
+			const vertex_t& v3 = call.prims.verts_[tri[2]];
 			drawTriangle(call.uniforms, v1, v2, v3);
 		}
 	}
 
+	void setCleanColor(const color_scalar_t& c) {
+		clean_color_ = c;
+	}
+
 	void clean() {
-		uint32_t cc = Bgri(Vector3f(0.2f, 0.2f, 0.6f));
 		for (int y = 0; y < height_; y++) {
-			uint32_t *dst = framebuffer_[y];
-			for (int x = width_; x > 0; dst++, x--) dst[0] = cc;
+			color_data_t *dst = framebuffer_[y];
+			for (int x = width_; x > 0; dst++, x--) dst[0] = CF::data(clean_color_);
 		}
 
 		for (int y = 0; y < height_; y++) {
-			std::vector<float>& dst = zbuffer_[y];
+			std::vector<float>& dst = depthbuffer_[y];
 			std::fill(dst.begin(), dst.end(), 0.0f);
 		}
 	}
 
 private:
-	void drawTriangle(const UL& u, SoftVertex<A, V> v0, SoftVertex<A, V> v1, SoftVertex<A, V> v2) {
+	void drawTriangle(const UL& u, vertex_t v0, vertex_t v1, vertex_t v2) {
 		v0.rhwInitialize();
 		v1.rhwInitialize();
 		v2.rhwInitialize();
 
-		LerpDerivative<A, V, C> lerpd;
+		LerpDerivative<vertex_t, fragment_t> lerpd;
 		lerpd.setTriangle(v0, v1, v2);
 
 		std::vector<Trapezoid> traps;
@@ -327,10 +336,10 @@ private:
 		}
 	}
 
-	void drawTrapezoid(const UL& u, const LerpDerivative<A, V, C>& lerpd, Trapezoid& trap) {
-		std::vector<std::array<SoftFragment<V, C>, 4> > tiles;
+	void drawTrapezoid(const UL& u, const LerpDerivative<vertex_t, fragment_t>& lerpd, Trapezoid& trap) {
+		std::vector<std::array<fragment_t, 4> > tiles;
 
-		TrapTraversal<V, C>(trap, width_, height_, tiles).process();
+		TrapTraversal<fragment_t>(trap, width_, height_, tiles).process();
 
 		profiler_->count("Frag Count", (int)(4 * tiles.size()));
 		for (auto i = tiles.begin(); i != tiles.end(); i++) {
@@ -344,13 +353,13 @@ private:
 
 		//fragment lerp
 		//fragment sharding
-		auto frag_lerp_and_sharding = [&](std::array<SoftFragment<V, C>, 4>& tile) {
+		auto frag_lerp_and_sharding = [&](std::array<fragment_t, 4>& tile) {
 			lerpd.lerp(tile[0]);
 			lerpd.lerp(tile[1]);
 			lerpd.lerp(tile[2]);
 			lerpd.lerp(tile[3]);
 
-			TileShader<UL, V, C, FS>().process(u, tile);
+			TileShader<UL, fragment_t, FS>().process(u, tile);
 		};
 
 		Concurrency::parallel_for_each(tiles.begin(), tiles.end(), frag_lerp_and_sharding);
@@ -361,19 +370,20 @@ private:
 		}
 	}
 
-	void merge(const std::array<SoftFragment<V, C>, 4>& tile) {
+	void merge(const std::array<fragment_t, 4>& tile) {
 		for (size_t i = 0; i != 4; i++) {
-			const SoftFragment<V, C>& frag = tile[i];
-			if (frag.weight != 0.0f && zbuffer_[frag.y][frag.x] <= frag.z) {
-				zbuffer_[frag.y][frag.x] = frag.z;
-				framebuffer_[frag.y][frag.x] = Rgbai(frag.c);
+			const fragment_t& frag = tile[i];
+			if (frag.weight != 0.0f && depthbuffer_[frag.y][frag.x] <= frag.z) {
+				depthbuffer_[frag.y][frag.x] = frag.z;
+				framebuffer_[frag.y][frag.x] = CF::data(frag.c);
 			}
 		}
 	}
 
 private:
-	std::vector<uint32_t*> framebuffer_;
-	std::vector<std::vector<float> > zbuffer_;
+	color_scalar_t clean_color_;
+	std::vector<color_data_t*> framebuffer_;
+	std::vector<std::vector<float> > depthbuffer_;
 	int width_, height_;
 	Profiler* profiler_;
 };

@@ -46,8 +46,8 @@ namespace soft_cup {
 				int texw = 0, texh = 0;
 				void* bits = LoadTexture(mesh.mtl.tex_full_path, false, texw, texh);
 				if (bits) {
-					SoftSurfacePtr surface = std::make_shared<SoftSurface>();
-					surface->reset(texw, texh, (uint32_t*)bits);
+					SoftSurfaceU32F3Ptr surface = std::make_shared<SoftSurfaceU32F3>();
+					surface->reset(texw, texh, (uint32_t*)bits, Swap02);
 					ResFree(bits);
 					cmd.uniforms.texture = CreateSoftMipmap(surface);
 				}

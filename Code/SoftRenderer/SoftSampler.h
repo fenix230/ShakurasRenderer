@@ -9,28 +9,28 @@ SHAKURAS_BEGIN;
 
 class SoftSampler {
 public:
-	template<class S, typename AF>
-	Vector3f surfaceNearest(float u, float v, const S& surface, AF addressing) {
+	template<class CF, typename AF>
+	typename CF::scalar_t surfaceNearest(float u, float v, const SoftSurface<CF>& surface, AF addressing) {
 		return NearestSample(u, v, surface, addressing);
 	}
 
-	template<class S, typename AF>
-	Vector3f surfaceBilinear(float u, float v, const S& surface, AF addressing) {
+	template<class CF, typename AF>
+	typename CF::scalar_t surfaceBilinear(float u, float v, const SoftSurface<CF>& surface, AF addressing) {
 		return BilinearSample(u, v, surface, addressing);
 	}
 
-	template<class M, typename AF>
-	Vector3f mipmapNearest(float u, float v, const M& mipmap, AF addressing) {
+	template<class CF, typename AF>
+	typename CF::scalar_t mipmapNearest(float u, float v, const SoftMipmap<CF>& mipmap, AF addressing) {
 		return NearestSample(u, v, ddx_, ddy_, mipmap, addressing);
 	}
 
-	template<class M, typename AF>
-	Vector3f mipmapBilinear(float u, float v, const M& mipmap, AF addressing) {
+	template<class CF, typename AF>
+	typename CF::scalar_t mipmapBilinear(float u, float v, const SoftMipmap<CF>& mipmap, AF addressing) {
 		return BilinearSample(u, v, ddx_, ddy_, mipmap, addressing);
 	}
 
-	template<class M, typename AF>
-	Vector3f mipmapTrilinear(float u, float v, const M& mipmap, AF addressing) {
+	template<class CF, typename AF>
+	typename CF::scalar_t mipmapTrilinear(float u, float v, const SoftMipmap<CF>& mipmap, AF addressing) {
 		return TrilinearSample(u, v, ddx_, ddy_, mipmap, addressing);
 	}
 

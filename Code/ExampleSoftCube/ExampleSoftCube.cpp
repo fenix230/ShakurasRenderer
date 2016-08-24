@@ -14,20 +14,20 @@ using namespace shakuras;
 
 namespace soft_cube {
 
-	SoftMipmapPtr LoadMipmap(std::string tex_full_path) {
-		SoftSurfacePtr surface = std::make_shared<SoftSurface>();
+	SoftMipmapU32F3Ptr LoadMipmap(std::string tex_full_path) {
+		SoftSurfaceU32F3Ptr surface = std::make_shared<SoftSurfaceU32F3>();
 		int texw = 0, texh = 0;
 		void* bits = LoadTexture(tex_full_path, true, texw, texh);
-		surface->reset(texw, texh, (uint32_t*)bits);
+		surface->reset(texw, texh, (uint32_t*)bits, Swap02);
 		ResFree(bits);
 		return CreateSoftMipmap(surface);
 	}
 
-	SoftMipmapPtr GridMipmap() {
-		SoftSurfacePtr surface = std::make_shared<SoftSurface>();
+	SoftMipmapU32F3Ptr GridMipmap() {
+		SoftSurfaceU32F3Ptr surface = std::make_shared<SoftSurfaceU32F3>();
 		int texw = 0, texh = 0;
 		void* bits = GridTexture(texw, texh);
-		surface->reset(texw, texh, (uint32_t*)bits);
+		surface->reset(texw, texh, (uint32_t*)bits, Assign);
 		return CreateSoftMipmap(surface);
 	}
 
@@ -144,7 +144,7 @@ namespace soft_cube {
 		WinMemViewerPtr viewer_;
 		SoftPhongDrawCall output_;
 		Matrix44f proj_;
-		std::vector<SoftMipmapPtr> texlist_;
+		std::vector<SoftMipmapU32F3Ptr> texlist_;
 		int itex_;
 		int nspace_;
 		float alpha_;
