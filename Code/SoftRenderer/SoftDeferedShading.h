@@ -6,6 +6,4 @@ SHAKURAS_BEGIN;
 
 
 
-
-
 SHAKURAS_END;

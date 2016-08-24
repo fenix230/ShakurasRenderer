@@ -8,11 +8,11 @@ SHAKURAS_BEGIN;
 template<class V, class C>
 class SoftFragment {
 public:
-	SoftFragment() : x(0), y(0), z(1.0f), weight(0.0f) {}
+	SoftFragment() : x(0), y(0), z(1.0f), rhw(1.0f), weight(0.0f) {}
 
 public:
 	int x, y;
-	float z;
+	float z, rhw;
 	V varyings;
 	float weight;
 	C c;

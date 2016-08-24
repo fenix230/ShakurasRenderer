@@ -13,11 +13,11 @@ SHAKURAS_BEGIN;
 
 
 struct Edge {
-	Vector3f v1, v2;
+	Vector4f v1, v2;
 };
 
 
-inline Vector3f Lerp(const Edge& edge, float y) {
+inline Vector4f Lerp(const Edge& edge, float y) {
 	return edge.v1 + (edge.v2 - edge.v1) * ((y - edge.v1.y) / (edge.v2.y - edge.v1.y));
 }
 
@@ -29,8 +29,8 @@ struct Trapezoid {
 
 
 template<class A, class V>
-inline Vector3f XYRhw(const SoftVertex<A, V>& v) {
-	return Vector3f(v.pos.x, v.pos.y, v.rhw);
+inline Vector4f XYZRhw(const SoftVertex<A, V>& v) {
+	return Vector4f(v.pos.x, v.pos.y, v.pos.z, v.rhw);
 }
 
 
@@ -52,10 +52,10 @@ int SpliteTrapezoid(const SoftVertex<A, V>& v0, const SoftVertex<A, V>& v1, cons
 		if (p1->pos.x > p2->pos.x) std::swap(p1, p2);
 		traps[0].top = p1->pos.y;
 		traps[0].bottom = p3->pos.y;
-		traps[0].left.v1 = XYRhw(*p1);
-		traps[0].left.v2 = XYRhw(*p3);
-		traps[0].right.v1 = XYRhw(*p2);
-		traps[0].right.v2 = XYRhw(*p3);
+		traps[0].left.v1 = XYZRhw(*p1);
+		traps[0].left.v2 = XYZRhw(*p3);
+		traps[0].right.v1 = XYZRhw(*p2);
+		traps[0].right.v2 = XYZRhw(*p3);
 		if (traps[0].top < traps[0].bottom) {
 			return 1;
 		}
@@ -69,10 +69,10 @@ int SpliteTrapezoid(const SoftVertex<A, V>& v0, const SoftVertex<A, V>& v1, cons
 		if (p2->pos.x > p3->pos.x) std::swap(p2, p3);
 		traps[0].top = p1->pos.y;
 		traps[0].bottom = p3->pos.y;
-		traps[0].left.v1 = XYRhw(*p1);
-		traps[0].left.v2 = XYRhw(*p2);
-		traps[0].right.v1 = XYRhw(*p1);
-		traps[0].right.v2 = XYRhw(*p3);
+		traps[0].left.v1 = XYZRhw(*p1);
+		traps[0].left.v2 = XYZRhw(*p2);
+		traps[0].right.v1 = XYZRhw(*p1);
+		traps[0].right.v2 = XYZRhw(*p3);
 		if (traps[0].top < traps[0].bottom) {
 			return 1;
 		}
@@ -92,24 +92,24 @@ int SpliteTrapezoid(const SoftVertex<A, V>& v0, const SoftVertex<A, V>& v1, cons
 	x = p1->pos.x + (p2->pos.x - p1->pos.x) * k;
 
 	if (x <= p3->pos.x) {		// triangle left
-		traps[0].left.v1 = XYRhw(*p1);
-		traps[0].left.v2 = XYRhw(*p2);
-		traps[0].right.v1 = XYRhw(*p1);
-		traps[0].right.v2 = XYRhw(*p3);
-		traps[1].left.v1 = XYRhw(*p2);
-		traps[1].left.v2 = XYRhw(*p3);
-		traps[1].right.v1 = XYRhw(*p1);
-		traps[1].right.v2 = XYRhw(*p3);
+		traps[0].left.v1 = XYZRhw(*p1);
+		traps[0].left.v2 = XYZRhw(*p2);
+		traps[0].right.v1 = XYZRhw(*p1);
+		traps[0].right.v2 = XYZRhw(*p3);
+		traps[1].left.v1 = XYZRhw(*p2);
+		traps[1].left.v2 = XYZRhw(*p3);
+		traps[1].right.v1 = XYZRhw(*p1);
+		traps[1].right.v2 = XYZRhw(*p3);
 	}
 	else {					// triangle right
-		traps[0].left.v1 = XYRhw(*p1);
-		traps[0].left.v2 = XYRhw(*p3);
-		traps[0].right.v1 = XYRhw(*p1);
-		traps[0].right.v2 = XYRhw(*p2);
-		traps[1].left.v1 = XYRhw(*p1);
-		traps[1].left.v2 = XYRhw(*p3);
-		traps[1].right.v1 = XYRhw(*p2);
-		traps[1].right.v2 = XYRhw(*p3);
+		traps[0].left.v1 = XYZRhw(*p1);
+		traps[0].left.v2 = XYZRhw(*p3);
+		traps[0].right.v1 = XYZRhw(*p1);
+		traps[0].right.v2 = XYZRhw(*p2);
+		traps[1].left.v1 = XYZRhw(*p1);
+		traps[1].left.v2 = XYZRhw(*p3);
+		traps[1].right.v1 = XYZRhw(*p2);
+		traps[1].right.v2 = XYZRhw(*p3);
 	}
 
 	return 2;
@@ -136,7 +136,7 @@ public:
 
 private:
 	struct RangeLine {
-		Vector3f left, right;
+		Vector4f left, right;
 		int xb, xe;
 		bool visible;
 	};
@@ -197,7 +197,11 @@ private:
 	void fragAssign(float xf, float yf, const RangeLine& rl, FRAG& frag) {
 		frag.x = (int)xf;
 		frag.y = (int)yf;
-		frag.z = Lerp(rl.left.z, rl.right.z, (xf - rl.left.x) / (rl.right.x - rl.left.x));
+		float dx = rl.right.x - rl.left.x;
+		if (dx == 0.0f) dx = 0.000001f;
+		float s =  (xf - rl.left.x) / dx;
+		frag.z = Lerp(rl.left.z, rl.right.z, s);
+		frag.rhw = Lerp(rl.left.w, rl.right.w, s);
 		frag.weight = (rl.visible && (rl.xb <= frag.x && frag.x < rl.xe) ? 1.0f : 0.0f);
 	}
 
@@ -246,10 +250,9 @@ public:
 	void lerp(FRAG& frag) const {
 		float fx = frag.x + 0.5f;
 		float fy = frag.y + 0.5f;
-		float rhw = frag.z;
+		float rhw = frag.rhw;
 		if (rhw == 0.0f) rhw = 0.000001f;
 		frag.varyings = (v0_.varyings + ddx_.varyings * (fx - v0_.pos.x) + ddy_.varyings * (fy - v0_.pos.y)) / rhw;
-		frag.z = rhw;
 	}
 
 private:
@@ -273,10 +276,10 @@ public:
 		profiler_ = &profiler;
 
 		framebuffer_.resize(height_, nullptr);
-		depthbuffer_.resize(height_);
+		zbuffer_.resize(height_);
 
 		for (int y = 0; y != height_; y++) {
-			depthbuffer_[y].resize(width_, 0.0f);
+			zbuffer_[y].resize(width_, 0.0f);
 		}
 
 		color_data_t* framebuf = (color_data_t*)fb;
@@ -310,8 +313,8 @@ public:
 		}
 
 		for (int y = 0; y < height_; y++) {
-			std::vector<float>& dst = depthbuffer_[y];
-			std::fill(dst.begin(), dst.end(), 0.0f);
+			std::vector<float>& dst = zbuffer_[y];
+			std::fill(dst.begin(), dst.end(), 1.0f);
 		}
 	}
 
@@ -369,8 +372,8 @@ private:
 	void merge(const std::array<fragment_t, 4>& tile) {
 		for (size_t i = 0; i != 4; i++) {
 			const fragment_t& frag = tile[i];
-			if (frag.weight != 0.0f && depthbuffer_[frag.y][frag.x] <= frag.z) {
-				depthbuffer_[frag.y][frag.x] = frag.z;
+			if (frag.weight != 0.0f && frag.z < zbuffer_[frag.y][frag.x]) {
+				zbuffer_[frag.y][frag.x] = frag.z;
 				framebuffer_[frag.y][frag.x] = CF::data(frag.c);
 			}
 		}
@@ -378,7 +381,7 @@ private:
 
 private:
 	std::vector<color_data_t*> framebuffer_;
-	std::vector<std::vector<float> > depthbuffer_;
+	std::vector<std::vector<float> > zbuffer_;
 	int width_, height_;
 	Profiler* profiler_;
 };
