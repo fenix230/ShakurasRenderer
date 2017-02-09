@@ -15,6 +15,8 @@ SHAKURAS_BEGIN;
 //典型 Fixed-Function Pipeline 的 Phong 着色
 struct SoftPhongUniformList {
 	SoftMipmapU32F3Ptr texture;
+	int sample_cat;
+	int addr_cat;
 	Vector3f ambient;
 	Vector3f diffuse;
 	Vector3f specular;
@@ -22,6 +24,11 @@ struct SoftPhongUniformList {
 	Matrix44f mvp_trsf;
 	Vector3f light_dir;
 	Vector3f eye_pos;
+
+	SoftPhongUniformList() {
+		sample_cat = SoftSampler::kTrilinear;
+		addr_cat = SoftSampler::kRepeat;
+	}
 };
 
 
@@ -123,7 +130,7 @@ public:
 		Vector2f uv = f.varyings.uv;
 		Vector3f tc(1.0f, 1.0f, 1.0f);//默认白色
 		if (u.texture) {
-			tc = sampler.mipmapTrilinear(uv.x, uv.y, *u.texture, RepeatAddr);
+			tc = sampler.sample(uv.x, uv.y, *u.texture, u.sample_cat, u.addr_cat);
 		}
 		Vector3f c(tc.x * illum.x, tc.y * illum.y, tc.z * illum.z);
 

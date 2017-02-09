@@ -4,14 +4,14 @@
 #include "stb_image.h"
 
 
-void* GridTexture(int& width, int& height) {
+void* GridTexture(int& width, int& height, uint32_t c1, uint32_t c2) {
 	uint32_t* buffer = (uint32_t*)malloc(sizeof(uint32_t) * 256 * 256);
 
 	int i, j;
 	for (j = 0; j < 256; j++) {
 		for (i = 0; i < 256; i++) {
 			int x = i / 32, y = j / 32;
-			buffer[j * 256 + i] = ((x + y) & 1) ? 0xffffff : 0xefbc3f;
+			buffer[j * 256 + i] = ((x + y) & 1) ? c1 : c2;
 		}
 	}
 

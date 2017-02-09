@@ -97,7 +97,7 @@ typename CF::scalar_t NearestSample(float u, float v, const SoftSurface<CF>& sur
 	int x = (int)(u + 0.5f);
 	int y = (int)(v + 0.5f);
 
-	return surface.get(x, y);
+	return surface.gets(x, y);
 }
 
 

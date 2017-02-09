@@ -43,6 +43,11 @@ public:
 				std::cout << i->first << " : " << i->second << std::endl;
 			}
 
+			//Additions
+			for (auto i = additions_.begin(); i != additions_.end(); i++) {
+				std::cout << i->first << " : " << i->second << std::endl;
+			}
+
 			//Endl
 			std::cout << std::endl;
 		}
@@ -58,11 +63,16 @@ public:
 		}
 	}
 
+	void addition(const std::string& add_name, const std::string& add_value) {
+		additions_[add_name] = add_value;
+	}
+
 private:
 	std::chrono::time_point<std::chrono::steady_clock> time_pre_;
 	uint32_t report_span_;
 	size_t frame_count_;
 	std::unordered_map<std::string, int> counters_;
+	std::unordered_map<std::string, std::string> additions_;
 };
 
 

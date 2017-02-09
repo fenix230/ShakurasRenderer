@@ -143,6 +143,10 @@ inline Vector4<S> operator*(const Vector4<S>& v1, S t) {
 	return Vector4<S>(v1.x * t, v1.y * t, v1.z * t, v1.w * t);
 }
 template<class S>
+inline Vector4<S> operator*(const Vector4<S>& v1, const Vector4<S>& v2) {
+	return Vector4<S>(v1.x * v2.x, v1.y * v2.y, v1.z * v2.z, v1.w * v2.w);
+}
+template<class S>
 inline Vector4<S> operator/(const Vector4<S>& v1, S d) {
 	S t = 1.0f / d;
 	return Vector4<S>(v1.x * t, v1.y * t, v1.z * t, v1.w * t);
